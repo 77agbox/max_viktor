@@ -1,6 +1,7 @@
+import os
 from maxbot import Bot, Message
 
-bot = Bot(token="ТВОЙ_ТОКЕН")
+bot = Bot(token=os.getenv("BOT_TOKEN"))
 
 @bot.on_message()
 async def handle_message(msg: Message):
