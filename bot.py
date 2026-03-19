@@ -1,17 +1,17 @@
 import os
-from maxbot import Bot, Message
+from maxbot import MaxBot, Message
 
-bot = Bot(token=os.getenv("BOT_TOKEN"))
+bot = MaxBot(token=os.getenv("BOT_TOKEN"))
 
-@bot.on_message()
-async def handle_message(msg: Message):
-    text = msg.text.lower()
+@bot.message_handler()
+async def handle_message(message: Message):
+    text = message.text.lower()
 
     if text == "привет":
-        await msg.reply("Привет! 👋 Я бот центра Виктория")
+        await message.answer("Привет! 👋 Я бот центра Виктория")
     elif text == "кружки":
-        await msg.reply("У нас есть: танцы, рисование, программирование")
+        await message.answer("У нас есть: танцы, рисование, программирование")
     else:
-        await msg.reply("Напиши: привет или кружки")
+        await message.answer("Напиши: привет или кружки")
 
 bot.run()
