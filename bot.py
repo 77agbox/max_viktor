@@ -1,83 +1,43 @@
-"""
-Простейший пример бота на MaxBot без Telegram и без вебхуков.
-Используется интерактивный ввод из консоли.
-"""
+import os
+import requests
 
-import re
-from maxbot import MaxBot
+TOKEN = os.getenv("BOT_TOKEN")
+URL = f"https://botapi.max.ru/messages"
 
-# Инициализируем MaxBot с простым диалогом
-bot = MaxBot.inline(
-    """
-    dialog:
-      - condition: message.text.lower() in ['hello', 'hi', 'привет', 'здравствуй']
-        response: |
-          Привет! Я бот на MaxBot.
-          Как дела?
+def get_updates():
+    response = requests.get(f"{URL}/getUpdates", params={"access_token": TOKEN})
+    return response.json()
 
-      - condition: message.text.lower() in ['good bye', 'bye', 'пока', 'до свидания']
-        response: |
-          До свидания! Удачи!
+def send_message(chat_id, text):
+    requests.post(f"{URL}/send", json={
+        "chat_id": chat_id,
+        "text": text,
+        "access_token": TOKEN
+    })
 
-      - condition: message.text == '/start'
-        response: |
-          Добро пожаловать! Я бот на MaxBot.
-          Напишите "привет" или "hello" для начала.
+def main():
+    offset = 0
 
-      - condition: true
-        response: |
-          Извините, я не понял. Попробуйте написать "привет" или "/start".
-    """
-)
+    while True:
+        data = get_updates()
 
+        if "result" in data:
+            for update in data["result"]:
+                message = update.get("message")
+                if not message:
+                    continue
 
-def extract_text_from_reply(reply) -> str:
-    """Извлекает текст из ответа MaxBot"""
-    try:
-        # Если это объект с атрибутом value
-        if hasattr(reply, 'value'):
-            return str(reply.value)
-        # Если это объект с методом render
-        elif hasattr(reply, 'render'):
-            return str(reply.render())
-        # Иначе просто преобразуем в строку
-        else:
-            reply_text = str(reply)
-            # Убираем лишние символы из строкового представления объекта
-            if reply_text.startswith('<maxml.markup.Value'):
-                # Извлекаем текст из строки вида "<maxml.markup.Value'текст'>"
-                match = re.search(r"'([^']+)'", reply_text)
-                if match:
-                    return match.group(1)
-            return reply_text
-    except Exception:
-        return str(reply)
+                chat_id = message["chat"]["id"]
+                text = message.get("text", "").lower()
 
+                if text == "привет":
+                    send_message(chat_id, "Привет! 👋 Я бот центра Виктория")
+                elif text == "кружки":
+                    send_message(chat_id, "У нас есть: танцы, рисование, программирование")
+                else:
+                    send_message(chat_id, "Напиши: привет или кружки")
 
-def main() -> None:
-    """Запуск бота для мессенджера Max (без интерактивного ввода)"""
-    import time
-    import sys
-    
-    print("🚀 MaxBot запущен для мессенджера Max")
-    print("✅ Бот готов к работе. Ожидание сообщений...")
-    print("ℹ️  Бот работает в фоновом режиме")
-    print("ℹ️  Для работы с Max API используйте webhook или long polling")
-    
-    # Держим процесс запущенным
-    # В реальном боте здесь должна быть интеграция с Max API
-    # (webhook endpoint или long polling)
-    try:
-        while True:
-            time.sleep(60)  # Спим 60 секунд, чтобы не нагружать CPU
-            # Здесь можно добавить проверку новых сообщений через Max API
-    except KeyboardInterrupt:
-        print("\n👋 Остановка бота...")
-        sys.exit(0)
-    except Exception as exc:
-        print(f"⚠️ Ошибка: {exc}")
-        sys.exit(1)
-
+        time.sleep(2)
 
 if __name__ == "__main__":
     main()
