@@ -1,5 +1,6 @@
 import os
-from maxbot import MaxBot, Message
+from maxbot import MaxBot
+from maxbot.types import Message
 
 bot = MaxBot(token=os.getenv("BOT_TOKEN"))
 
